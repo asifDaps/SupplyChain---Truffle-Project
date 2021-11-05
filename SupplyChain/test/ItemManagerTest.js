@@ -1,3 +1,5 @@
+const { assert } = require("console");
+
 const ItemManager = artifacts.require("./ItemManager.sol");
 const TestFunnel = artifacts.require("./TestFunnel.sol");
 const Item = artifacts.require("./Item.sol");
@@ -9,7 +11,11 @@ contract("Create , Pay for , Deliver Item Test", (accounts) => {
     const creatingItem1 = await ItemManagerInstance.createItem("jonas", 12, {
       from: accounts[0],
     });
-
+    assert.equal(
+      Delivery.logs[0].args._step.words[0],
+      0,
+      "Item Was Not Created"
+    );
     //TODO pay for it
     const Item1Price = creatingItem1.logs[0].args._itemPrice.words[0];
     const ItemManagerAddress = await ItemManagerInstance.viewAddress();
@@ -26,10 +32,20 @@ contract("Create , Pay for , Deliver Item Test", (accounts) => {
       gas: 300000,
     });
     // console.log(res);
+    assert.equal(
+      Delivery.logs[0].args._step.words[0],
+      1,
+      "Item Was Not Paid For"
+    );
     //TODO trgiggering dlivery
     const Delivery = await ItemManagerInstance.triggerDelivery(
       creatingItem1.logs[0].args._itemIndex.words[0]
     );
     // console.log(Delivery.logs[0].args._step.words[0]);
+    assert.equal(
+      Delivery.logs[0].args._step.words[0],
+      2,
+      "Item Was Not Delivered"
+    );
   });
 });
